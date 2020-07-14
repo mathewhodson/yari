@@ -36,8 +36,28 @@ function humanFileSize(size) {
   return `${num} ${"KMGTPEZY"[i - 1]}B`;
 }
 
+function memoizeDuringBuild(fn, cacheKeyFn = null) {
+  if (process.env.NODE_ENV === "development") {
+    return fn;
+  }
+
+  const cache = new Map();
+  return (...args) => {
+    const key = cacheKeyFn ? cacheKeyFn(...args) : JSON.stringify(args);
+
+    if (cache.has(key)) {
+      return cache.get(key);
+    }
+
+    const value = fn(...args);
+    cache.set(key, value);
+    return value;
+  };
+}
+
 module.exports = {
   buildURL,
   slugToFoldername,
   humanFileSize,
+  memoizeDuringBuild,
 };

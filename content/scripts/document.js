@@ -6,7 +6,7 @@ const glob = require("glob");
 const yaml = require("js-yaml");
 
 const { DEFAULT_BUILD_ROOT, VALID_LOCALES } = require("./constants");
-const { slugToFoldername } = require("./utils");
+const { memoizeDuringBuild, slugToFoldername } = require("./utils");
 
 function buildPath(localeFolder, slug) {
   return path.join(localeFolder, slugToFoldername(slug));
@@ -99,7 +99,7 @@ function create(html, metadata, wikiHistory = null, rawHtml = null) {
   }
 }
 
-const read = (folder, includeTimestamp = false) => {
+const read = memoizeDuringBuild((folder, includeTimestamp = false) => {
   const filePath = getHTMLPath(folder);
   if (!fs.existsSync(filePath)) {
     return null;
@@ -145,7 +145,7 @@ const read = (folder, includeTimestamp = false) => {
       frontMatterOffset,
     },
   };
-};
+});
 
 function findChildren(url) {
   const folder = urlToFolderPath(url);
@@ -216,7 +216,7 @@ function del(folder) {
   );
 }
 
-function findByURL(url) {
+const findByURL = memoizeDuringBuild((url) => {
   const folder = urlToFolderPath(url);
 
   const document = read(path.join(DEFAULT_BUILD_ROOT, folder));
@@ -224,7 +224,7 @@ function findByURL(url) {
   return document
     ? { contentRoot: DEFAULT_BUILD_ROOT, folder, document }
     : null;
-}
+});
 
 function listURLs() {
   const popularities = JSON.parse(
