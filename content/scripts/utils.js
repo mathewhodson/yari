@@ -1,5 +1,6 @@
 const path = require("path");
 
+const LRU = require("lru-cache");
 const sanitizeFilename = require("sanitize-filename");
 
 function buildURL(locale, slug) {
@@ -41,7 +42,7 @@ function memoizeDuringBuild(fn, cacheKeyFn = null) {
     return fn;
   }
 
-  const cache = new Map();
+  const cache = new LRU(100);
   return (...args) => {
     const key = cacheKeyFn ? cacheKeyFn(...args) : JSON.stringify(args);
 
