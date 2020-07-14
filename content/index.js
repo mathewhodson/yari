@@ -1,9 +1,8 @@
 #!/usr/bin/env node
 const cli = require("caporal");
 
-const { renderDocuments } = require("./scripts/build");
-const runImporter = require("./scripts/importer");
-const { runMakePopularitiesFile } = require("./scripts/popularities");
+const runImporter = require("./src/importer");
+const { runMakePopularitiesFile } = require("./src/popularities");
 
 const {
   DEFAULT_DATABASE_URL,
@@ -12,7 +11,7 @@ const {
   DEFAULT_BUILD_ARCHIVE_ROOT,
   DEFAULT_BUILD_LOCALES,
   MAX_GOOGLE_ANALYTICS_URIS,
-} = require("./scripts/constants.js");
+} = require("./src/constants.js");
 
 cli
   .version(require("./package.json").version)
@@ -60,11 +59,6 @@ cli
   .action((args, options, logger) => {
     options.dbURL = args.url;
     return runImporter(options);
-  })
-
-  .command("render")
-  .action(async () => {
-    await renderDocuments();
   })
 
   .command(

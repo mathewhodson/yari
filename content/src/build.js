@@ -389,5 +389,4 @@ async function buildDocumentFromURL(url) {
 
 module.exports = {
   buildDocumentFromURL,
-  listDocumentURLs: Document.listURLs,
 };

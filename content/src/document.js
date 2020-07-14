@@ -147,17 +147,6 @@ const read = memoizeDuringBuild((folder, includeTimestamp = false) => {
   };
 });
 
-function findChildren(url) {
-  const folder = urlToFolderPath(url);
-  const childPaths = glob.sync(
-    path.join(DEFAULT_BUILD_ROOT, folder, "*", HTML_FILENAME),
-    {
-      ignore: path.join(DEFAULT_BUILD_ROOT, getHTMLPath(folder)),
-    }
-  );
-  return childPaths.map((childFilePath) => read(path.dirname(childFilePath)));
-}
-
 function update(folder, rawHtml, metadata) {
   const document = read(folder);
   const oldSlug = document.metadata.slug;
@@ -226,6 +215,17 @@ const findByURL = memoizeDuringBuild((url) => {
     : null;
 });
 
+function findChildren(url) {
+  const folder = urlToFolderPath(url);
+  const childPaths = glob.sync(
+    path.join(DEFAULT_BUILD_ROOT, folder, "*", HTML_FILENAME),
+    {
+      ignore: path.join(DEFAULT_BUILD_ROOT, getHTMLPath(folder)),
+    }
+  );
+  return childPaths.map((childFilePath) => read(path.dirname(childFilePath)));
+}
+
 /**
  * Atm this is NextJS and Vercel specific, as they come with limiations:
  * - NextJS doesn't allow special characters in the URL
@@ -247,11 +247,14 @@ function listURLs() {
 
 module.exports = {
   buildPath,
+
   create,
   read,
   update,
   del,
+
   findByURL,
   findChildren,
+
   listURLs,
 };

@@ -4,9 +4,7 @@ const path = require("path");
 const express = require("express");
 const openEditor = require("open-editor");
 
-const { buildDocumentFromURL } = require("content/scripts/build");
-const { resolveRedirect } = require("content/scripts/redirects");
-const { slugToFoldername } = require("content/scripts/utils");
+const { buildDocumentFromURL, resolveRedirect } = require("content/src/lib");
 const { renderHTML, renderJSON } = require("ssr");
 
 const { STATIC_ROOT } = require("./constants");
@@ -34,7 +32,7 @@ app.use((req, res, next) => {
     // to:
     //   /en-us/docs/web/css/_colon_indeterminate/_samples_/progress_bar
     // since they should be served directly by the static middleware.
-    req.url = slugToFoldername(req.url);
+    // req.url = slugToFoldername(req.url);
   }
   next();
 });

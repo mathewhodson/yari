@@ -1,7 +1,7 @@
-const { buildDocumentFromURL, listDocumentURLs } = require("content");
+const { buildDocumentFromURL, Document } = require("content");
 
 const { prepareDoc } = require("../doc-fix");
-import { Document } from "../src/document";
+import { Document as DocumentView } from "../src/document";
 
 type StaticProps<T> = T extends (
   ...params: unknown[]
@@ -15,7 +15,7 @@ export async function getStaticPaths() {
   return isDevelopment
     ? { paths: [], fallback: true }
     : {
-        paths: listDocumentURLs(),
+        paths: Document.listURLs(),
         fallback: false,
       };
 }
@@ -33,5 +33,5 @@ export async function getStaticProps(props) {
 }
 
 export default ({ doc }: StaticProps<typeof getStaticProps>) => {
-  return <Document doc={doc} />;
+  return <DocumentView doc={doc} />;
 };

@@ -1,5 +1,5 @@
-const Document = require("content/scripts/document");
-const { buildURL } = require("content/scripts/utils");
+const { Document } = require("content/src/lib");
+const { buildURL } = require("content/src/utils");
 
 const BASE_URL = "https://developer.mozilla.org";
 const DUMMY_BASE_URL = "https://example.com";

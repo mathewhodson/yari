@@ -1,5 +1,5 @@
-const Document = require("content/scripts/document");
-const { memoizeDuringBuild } = require("content/scripts/utils");
+const Document = require("content/src/document");
+const { memoizeDuringBuild } = require("content/src/utils");
 
 const Templates = require("./src/templates.js");
 const AllPagesInfo = require("./src/info.js");
