@@ -226,6 +226,21 @@ function findByURL(url) {
     : null;
 }
 
+function listURLs() {
+  const filePaths = glob.sync(
+    path.join(DEFAULT_BUILD_ROOT, "**", HTML_FILENAME)
+  );
+  return filePaths.slice(0, 10).map((filePath) => {
+    const {
+      metadata: { locale, slug },
+    } = read(path.dirname(filePath));
+    return `/${locale
+      .split("-")
+      .map((p, i) => (i === 1 ? p.toUpperCase() : p))
+      .join("-")}/docs/${slug}`;
+  });
+}
+
 module.exports = {
   buildPath,
   create,
@@ -234,4 +249,5 @@ module.exports = {
   del,
   findByURL,
   findChildren,
+  listURLs,
 };

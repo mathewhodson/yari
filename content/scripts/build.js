@@ -344,7 +344,7 @@ async function buildDocument(folder, document) {
   doc.body = extractDocumentSections($);
 
   doc.popularity = metadata.popularity || 0.0;
-  doc.modified = metadata.modified;
+  doc.modified = metadata.modified || null;
 
   const otherTranslations = document.translations || [];
   if (!otherTranslations.length && metadata.translation_of) {
@@ -389,4 +389,5 @@ async function buildDocumentFromURL(url) {
 
 module.exports = {
   buildDocumentFromURL,
+  listDocumentURLs: Document.listURLs,
 };

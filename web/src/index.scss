@@ -1,0 +1,24 @@
+@import "water.css/light";
+body {
+  max-width: unset;
+}
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: "Zilla Slab", Arial, sans-serif;
+}
+// End overrides on water.css
+
+// (At least without a theme) regular prism.css is really small so we can
+// afford to load it on all and every page globally.
+@import "prismjs/themes/prism";
+
+@import "mdn";
+@import "breadcrumb";
+
+// NextJS only allow CSS import in JS files for CSS Modules, so we ahve to put
+// all the global css here
+@import "document/ingredients/browser-compatibility-table/bcd";
