@@ -226,6 +226,11 @@ const findByURL = memoizeDuringBuild((url) => {
     : null;
 });
 
+/**
+ * Atm this is NextJS and Vercel specific, as they come with limiations:
+ * - NextJS doesn't allow special characters in the URL
+ * - Vercel only allows for 16k URLs in the free version
+ */
 function listURLs() {
   const popularities = JSON.parse(
     fs.readFileSync(
@@ -233,7 +238,11 @@ function listURLs() {
       "utf-8"
     )
   );
-  return Object.keys(popularities).filter((key) => key.startsWith("/en-US"));
+  return Object.keys(popularities).filter(
+    (url) =>
+      url.startsWith("/en-US") &&
+      ![":", "*", "?"].some((char) => url.includes(char))
+  );
 }
 
 module.exports = {
