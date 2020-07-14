@@ -16,7 +16,6 @@ function addRedirect(locale, oldSlug, newSlug) {
 }
 
 function resolveRedirect(url) {
-  console.log(path.resolve(DEFAULT_BUILD_ROOT));
   const localeFolders = fs
     .readdirSync(DEFAULT_BUILD_ROOT)
     .map((n) => path.join(DEFAULT_BUILD_ROOT, n))

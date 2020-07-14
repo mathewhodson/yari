@@ -227,18 +227,13 @@ function findByURL(url) {
 }
 
 function listURLs() {
-  const filePaths = glob.sync(
-    path.join(DEFAULT_BUILD_ROOT, "**", HTML_FILENAME)
+  const popularities = JSON.parse(
+    fs.readFileSync(
+      path.join(DEFAULT_BUILD_ROOT, "..", "popularities.json"),
+      "utf-8"
+    )
   );
-  return filePaths.map((filePath) => {
-    const {
-      metadata: { locale, slug },
-    } = read(path.dirname(filePath));
-    return `/${locale
-      .split("-")
-      .map((p, i) => (i === 1 ? p.toUpperCase() : p))
-      .join("-")}/docs/${slug}`;
-  });
+  return Object.keys(popularities).filter((key) => key.startsWith("/en-US"));
 }
 
 module.exports = {
