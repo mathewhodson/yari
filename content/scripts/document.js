@@ -230,7 +230,7 @@ function listURLs() {
   const filePaths = glob.sync(
     path.join(DEFAULT_BUILD_ROOT, "**", HTML_FILENAME)
   );
-  return filePaths.slice(0, 10).map((filePath) => {
+  return filePaths.map((filePath) => {
     const {
       metadata: { locale, slug },
     } = read(path.dirname(filePath));
