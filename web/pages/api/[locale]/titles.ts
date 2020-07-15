@@ -2,7 +2,7 @@ import { Worker } from "worker_threads";
 
 let titlesByLocale: any = null;
 
-const worker = new Worker("../web/server/index-worker.js");
+const worker = new Worker("../web/server/index.worker.js");
 worker.on("message", (data) => {
   titlesByLocale = data;
 });
