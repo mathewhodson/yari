@@ -5,8 +5,10 @@ const fm = require("front-matter");
 const glob = require("glob");
 const yaml = require("js-yaml");
 
-const { DEFAULT_BUILD_ROOT, VALID_LOCALES } = require("./constants");
+const { VALID_LOCALES } = require("./constants");
 const { buildURL, memoizeDuringBuild, slugToFoldername } = require("./utils");
+
+const CONTENT_ROOT = path.join(__dirname, "..", "files");
 
 function buildPath(localeFolder, slug) {
   return path.join(localeFolder, slugToFoldername(slug));
@@ -33,10 +35,8 @@ function updateWikiHistory(localeContentRoot, oldSlug, newSlug = null) {
 }
 
 function extractLocale(folder) {
-  // E.g. 'pt-br/web/foo'
-  const relativeToSource = path.relative(DEFAULT_BUILD_ROOT, folder);
   // E.g. 'pr-br'
-  const localeFolderName = relativeToSource.split(path.sep)[0];
+  const localeFolderName = folder.split(path.sep)[0];
   // E.g. 'pt-BR'
   const locale = VALID_LOCALES.get(localeFolderName);
   // This checks that the extraction worked *and* that the locale found
@@ -75,7 +75,7 @@ function urlToFolderPath(url) {
 
 function create(html, metadata, wikiHistory = null, rawHtml = null) {
   const folder = buildPath(
-    path.join(DEFAULT_BUILD_ROOT, metadata.locale),
+    path.join(CONTENT_ROOT, metadata.locale),
     metadata.slug
   );
 
@@ -111,7 +111,7 @@ class Document {
 
 const read = memoizeDuringBuild((folder, fields = null) => {
   fields = fields ? { body: false, metadata: false, ...fields } : fields;
-  const filePath = getHTMLPath(folder);
+  const filePath = path.join(CONTENT_ROOT, getHTMLPath(folder));
   if (!fs.existsSync(filePath)) {
     return null;
   }
@@ -152,7 +152,7 @@ function update(folder, rawHtml, metadata) {
     });
     if (isNewSlug) {
       updateWikiHistory(
-        path.join(DEFAULT_BUILD_ROOT, metadata.locale.toLowerCase()),
+        path.join(CONTENT_ROOT, metadata.locale.toLowerCase()),
         oldSlug,
         newSlug
       );
@@ -165,14 +165,14 @@ function update(folder, rawHtml, metadata) {
       const newChildSlug = oldChildSlug.replace(oldSlug, newSlug);
       metadata.slug = newChildSlug;
       updateWikiHistory(
-        path.join(DEFAULT_BUILD_ROOT, metadata.locale.toLowerCase()),
+        path.join(CONTENT_ROOT, metadata.locale.toLowerCase()),
         oldChildSlug,
         newChildSlug
       );
       saveHTMLFile(fileInfo.path, rawHtml, metadata);
     }
     const newFolder = buildPath(
-      path.join(DEFAULT_BUILD_ROOT, metadata.locale.toLowerCase()),
+      path.join(CONTENT_ROOT, metadata.locale.toLowerCase()),
       newSlug
     );
 
@@ -186,28 +186,23 @@ function update(folder, rawHtml, metadata) {
 function del(folder) {
   const { metadata } = read(folder, { metadata: true });
   fs.rmdirSync(folder, { recursive: true });
-  updateWikiHistory(
-    path.join(DEFAULT_BUILD_ROOT, metadata.locale),
-    metadata.slug
-  );
+  updateWikiHistory(path.join(CONTENT_ROOT, metadata.locale), metadata.slug);
 }
 
 const findByURL = memoizeDuringBuild((url, fields = null) => {
   const folder = urlToFolderPath(url);
 
-  const document = read(path.join(DEFAULT_BUILD_ROOT, folder), fields);
+  const document = read(path.join(CONTENT_ROOT, folder), fields);
 
-  return document
-    ? { contentRoot: DEFAULT_BUILD_ROOT, folder, document }
-    : null;
+  return document ? { contentRoot: CONTENT_ROOT, folder, document } : null;
 });
 
 function findChildren(url, fields = null) {
   const folder = urlToFolderPath(url);
   const childPaths = glob.sync(
-    path.join(DEFAULT_BUILD_ROOT, folder, "*", HTML_FILENAME),
+    path.join(CONTENT_ROOT, folder, "*", HTML_FILENAME),
     {
-      ignore: path.join(DEFAULT_BUILD_ROOT, getHTMLPath(folder)),
+      ignore: path.join(CONTENT_ROOT, getHTMLPath(folder)),
     }
   );
   return childPaths.map((childFilePath) =>
@@ -222,10 +217,7 @@ function findChildren(url, fields = null) {
  */
 function listURLs() {
   const popularities = JSON.parse(
-    fs.readFileSync(
-      path.join(DEFAULT_BUILD_ROOT, "..", "popularities.json"),
-      "utf-8"
-    )
+    fs.readFileSync(path.join(CONTENT_ROOT, "..", "popularities.json"), "utf-8")
   );
   return Object.keys(popularities).filter(
     (url) =>
