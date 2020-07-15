@@ -1,9 +1,8 @@
 // @ts-nocheck
-import React, { useEffect, useRef, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useRouter } from "next/router";
 import FlexSearch from "flexsearch";
+import React, { useEffect, useRef, useState } from "react";
 import FuzzySearch from "./fuzzy-search";
-import "./search.scss";
 
 function isMobileUserAgent() {
   return (
@@ -35,8 +34,7 @@ function useFocusOnSlash(input: HTMLInputElement | null) {
 }
 
 export function SearchNavigateWidget() {
-  const { pathname } = useLocation();
-  const navigate = useNavigate();
+  const router = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
   const [query, setQuery] = useState("");
 
@@ -50,11 +48,11 @@ export function SearchNavigateWidget() {
     >
       <SearchWidget
         inputRef={inputRef}
-        pathname={pathname}
+        pathname={router.asPath}
         value={query}
         onChange={(value) => setQuery(value)}
         onSelect={(url) => {
-          navigate(url);
+          router.push(url);
           setQuery("");
         }}
       />
@@ -152,7 +150,7 @@ export class SearchWidget extends React.Component<{
 
       let response;
       try {
-        response = await fetch(`/${this.getCurrentLocale()}/titles.json`);
+        response = await fetch(`/api/${this.getCurrentLocale()}/titles`);
       } catch (ex) {
         if (this.dismounted) return;
         return this.setState({ serverError: ex, showSearchResults: true });

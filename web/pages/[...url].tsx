@@ -1,3 +1,5 @@
+import { SearchNavigateWidget } from "../src/search";
+
 const { buildDocumentFromURL, Document } = require("content");
 
 const { prepareDoc } = require("../doc-fix");
@@ -33,5 +35,12 @@ export async function getStaticProps(props) {
 }
 
 export default ({ doc }: StaticProps<typeof getStaticProps>) => {
-  return <DocumentView doc={doc} />;
+  return (
+    <div>
+      <header>
+        <SearchNavigateWidget />
+      </header>
+      <DocumentView doc={doc} />
+    </div>
+  );
 };

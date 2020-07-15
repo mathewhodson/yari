@@ -1,5 +1,5 @@
 import Link from "next/link";
-import React, { lazy, Suspense, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 
 // Ingredients
 import { Prose, ProseWithHeading } from "./ingredients/prose";
@@ -12,7 +12,6 @@ import { BrowserCompatibilityTable } from "./ingredients/browser-compatibility-t
 // Misc
 // Sub-components
 import { DocumentTranslations } from "./languages";
-import { useRouter } from "next/router";
 
 // import "./index.scss";
 
@@ -20,10 +19,7 @@ import { useRouter } from "next/router";
 // const Toolbar = lazy(() => import("./toolbar"));
 
 export function Document({ doc } /* TODO: define a TS interface for this */) {
-  const router = useRouter();
-
   useEffect(() => {
-    (window as any).rr = () => router.reload();
     if (doc) {
       document.title = doc.title;
     }

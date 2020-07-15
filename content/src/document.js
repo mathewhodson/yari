@@ -105,7 +105,8 @@ class Document {
   }
 
   get url() {
-    return buildURL(this.metadata.locale, this.metadata.slug);
+    const { locale, slug } = this.metadata;
+    return `/${locale}/docs/${slug}`;
   }
 }
 
@@ -192,7 +193,7 @@ function del(folder) {
 const findByURL = memoizeDuringBuild((url, fields = null) => {
   const folder = urlToFolderPath(url);
 
-  const document = read(path.join(CONTENT_ROOT, folder), fields);
+  const document = read(folder, fields);
 
   return document ? { contentRoot: CONTENT_ROOT, folder, document } : null;
 });

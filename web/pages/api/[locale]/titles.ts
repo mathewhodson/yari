@@ -1,6 +1,6 @@
 const { Document, popularities, watch } = require("content");
 
-const titles = {};
+const titlesByLocale = {};
 let isReady = false;
 
 watch({
@@ -14,9 +14,14 @@ watch({
         return;
       }
       const { metadata, url } = document;
-      titles[url] = {
+      const locale = url.split("/")[1];
+
+      if (!titlesByLocale[locale]) {
+        titlesByLocale[locale] = {};
+      }
+      titlesByLocale[locale][url] = {
         title: metadata.title,
-        popularity: popularities[url] || 0,
+        popularity: Number((popularities[url] || 0).toPrecision(4)),
       };
     } catch (e) {
       console.error(`Error while adding document ${folder} to index:`, e);
@@ -24,12 +29,18 @@ watch({
   },
   onUpdate() {},
   onDelete(folder) {
-    delete titles[Document.read(folder, { metadata: true }).url];
+    const { url } = Document.read(folder, { metadata: true });
+    delete titlesByLocale[url.split("/")[1]][url];
   },
 });
 
 export default (req, res) => {
   res.statusCode = 200;
+  const jsonString = JSON.stringify({
+    isReady,
+    titles: titlesByLocale[req.query.locale] || {},
+  });
   res.setHeader("Content-Type", "application/json");
-  res.end(JSON.stringify(titles));
+  res.setHeader("Content-Length", Buffer.byteLength(jsonString, "utf8"));
+  res.end(jsonString);
 };
