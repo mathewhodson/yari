@@ -1,44 +1,17 @@
-const { Document, popularities, watch } = require("content");
+import { Worker } from "worker_threads";
 
-const titlesByLocale = {};
-let isReady = false;
+let titlesByLocale: any = null;
 
-watch({
-  onReady() {
-    isReady = true;
-  },
-  onCreate(folder) {
-    try {
-      const document = Document.read(folder, { metadata: true });
-      if (!document) {
-        return;
-      }
-      const { metadata, url } = document;
-      const locale = url.split("/")[1];
-
-      if (!titlesByLocale[locale]) {
-        titlesByLocale[locale] = {};
-      }
-      titlesByLocale[locale][url] = {
-        title: metadata.title,
-        popularity: Number((popularities[url] || 0).toPrecision(4)),
-      };
-    } catch (e) {
-      console.error(`Error while adding document ${folder} to index:`, e);
-    }
-  },
-  onUpdate() {},
-  onDelete(folder) {
-    const { url } = Document.read(folder, { metadata: true });
-    delete titlesByLocale[url.split("/")[1]][url];
-  },
+const worker = new Worker("../web/server/index-worker.js");
+worker.on("message", (data) => {
+  titlesByLocale = data;
 });
 
 export default (req, res) => {
   res.statusCode = 200;
   const jsonString = JSON.stringify({
-    isReady,
-    titles: titlesByLocale[req.query.locale] || {},
+    isReady: !!titlesByLocale,
+    titles: titlesByLocale ? titlesByLocale[req.query.locale] : {},
   });
   res.setHeader("Content-Type", "application/json");
   res.setHeader("Content-Length", Buffer.byteLength(jsonString, "utf8"));
