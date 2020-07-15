@@ -206,9 +206,11 @@ function findChildren(url, fields = null) {
       ignore: path.join(CONTENT_ROOT, getHTMLPath(folder)),
     }
   );
-  return childPaths.map((childFilePath) =>
-    read(path.dirname(childFilePath), fields)
-  );
+  return childPaths
+    .map((childFilePath) =>
+      path.relative(CONTENT_ROOT, path.dirname(childFilePath))
+    )
+    .map((folder) => read(folder, fields));
 }
 
 /**

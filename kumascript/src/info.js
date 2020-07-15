@@ -1,4 +1,4 @@
-const { Document } = require("content/src/lib");
+const Document = require("content/src/document");
 
 const BASE_URL = "https://developer.mozilla.org";
 const DUMMY_BASE_URL = "https://example.com";
@@ -107,6 +107,7 @@ class AllPagesInfo {
 
     const { document } = result;
     const { locale, slug, title, summary, tags } = document.metadata;
+    const self = this;
     return {
       url: document.url,
       locale,
@@ -117,7 +118,7 @@ class AllPagesInfo {
       translations: [], //TODO Object.freeze(buildTranslationObjects(data)),
       get subpages() {
         return Document.findChildren(url, { metadata: true }).map((document) =>
-          this.getPage(document.url)
+          self.getPage(document.url)
         );
       },
     };
