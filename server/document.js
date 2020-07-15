@@ -2,7 +2,7 @@ const path = require("path");
 
 const express = require("express");
 
-const { Document } = require("content/src/lib");
+const { Document } = require("content");
 
 const router = express();
 

@@ -14,7 +14,9 @@
   },
   "private": true,
   "workspaces": [
+    "build",
     "content",
+    "import",
     "kumascript",
     "testing",
     "web"

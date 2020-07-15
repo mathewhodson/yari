@@ -1,6 +1,7 @@
 import { SearchNavigateWidget } from "../src/search";
 
-const { buildDocumentFromURL, Document } = require("content");
+const { buildDocumentFromURL } = require("build");
+const { Document } = require("content");
 
 const { prepareDoc } = require("../doc-fix");
 import { Document as DocumentView } from "../src/document";

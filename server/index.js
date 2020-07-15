@@ -4,7 +4,7 @@ const path = require("path");
 const express = require("express");
 const openEditor = require("open-editor");
 
-const { buildDocumentFromURL, resolveRedirect } = require("content/src/lib");
+const { buildDocumentFromURL, resolveRedirect } = require("content");
 const { renderHTML, renderJSON } = require("ssr");
 
 const { STATIC_ROOT } = require("./constants");

@@ -1,14 +1,34 @@
+const fs = require("fs");
+const path = require("path");
 const { parentPort } = require("worker_threads");
 
-const { Document, popularities, watch } = require("content");
+const chokidar = require("chokidar");
+
+const { CONTENT_ROOT, Document } = require("content");
 
 const titlesByLocale = {};
 
-watch({
-  onReady() {
-    parentPort.postMessage(titlesByLocale);
-  },
-  onCreate(folder) {
+function getFolder(filePath) {
+  return path.dirname(path.relative(CONTENT_ROOT, filePath));
+}
+
+function callWithFolder(callback) {
+  return (filePath) => callback(getFolder(filePath));
+}
+
+const popularities = JSON.parse(
+  fs.readFileSync(path.join(__dirname, "popularities.json"), "utf-8")
+);
+
+const watcher = chokidar.watch(CONTENT_ROOT, "**/*.html");
+
+watcher.on("ready", () => {
+  parentPort.postMessage(titlesByLocale);
+});
+
+watcher.on(
+  "add",
+  callWithFolder((folder) => {
     try {
       const document = Document.read(folder, { metadata: true });
       if (!document) {
@@ -27,11 +47,14 @@ watch({
     } catch (e) {
       console.error(`Error while adding document ${folder} to index:`, e);
     }
-  },
-  onUpdate() {},
-  onDelete(folder) {
+  })
+);
+
+watcher.on(
+  "unlink",
+  callWithFolder((folder) => {
     const { url } = Document.read(folder, { metadata: true });
     delete titlesByLocale[url.split("/")[1]][url];
     parentPort.postMessage(titlesByLocale);
-  },
-});
+  })
+);

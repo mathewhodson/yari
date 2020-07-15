@@ -1,6 +1,5 @@
 const path = require("path");
 
-const LRU = require("lru-cache");
 const sanitizeFilename = require("sanitize-filename");
 
 function buildURL(locale, slug) {
@@ -28,23 +27,14 @@ function slugToFoldername(slug) {
   );
 }
 
-function humanFileSize(size) {
-  if (size < 1024) return size + " B";
-  let i = Math.floor(Math.log(size) / Math.log(1024));
-  let num = size / Math.pow(1024, i);
-  let round = Math.round(num);
-  num = round < 10 ? num.toFixed(2) : round < 100 ? num.toFixed(1) : round;
-  return `${num} ${"KMGTPEZY"[i - 1]}B`;
-}
-
-function memoizeDuringBuild(fn, cacheKeyFn = null) {
+function memoizeDuringBuild(fn) {
   if (process.env.NODE_ENV === "development") {
     return fn;
   }
 
-  const cache = new LRU(100);
+  const cache = new Map();
   return (...args) => {
-    const key = cacheKeyFn ? cacheKeyFn(...args) : JSON.stringify(args);
+    const key = JSON.stringify(args);
 
     if (cache.has(key)) {
       return cache.get(key);
@@ -59,6 +49,5 @@ function memoizeDuringBuild(fn, cacheKeyFn = null) {
 module.exports = {
   buildURL,
   slugToFoldername,
-  humanFileSize,
   memoizeDuringBuild,
 };

@@ -1,32 +1,21 @@
-const fs = require("fs");
-const path = require("path");
 const childProcess = require("child_process");
 
 const chalk = require("chalk");
-const packageJson = require("../../package.json");
+const packageJson = require("../package.json");
 
-require("dotenv").config({ path: process.env.ENV_FILE });
+const { buildURL, Document, Redirect, slugToFoldername } = require("content");
+const kumascript = require("kumascript");
 
-const cheerio = require("./monkeypatched-cheerio");
-const Document = require("./document");
+const { FLAW_LEVELS } = require("./constants");
 const {
   extractDocumentSections,
   extractSidebar,
 } = require("./document-extractor");
 const { addBreadcrumbData } = require("./document-utils");
-const {
-  VALID_LOCALES,
-  FLAW_LEVELS,
-  DEFAULT_LIVE_SAMPLES_BASE_URL,
-  DEFAULT_INTERACTIVE_EXAMPLES_BASE_URL,
-} = require("./constants");
 const { injectFlaws } = require("./flaws");
-const { resolveRedirect } = require("./redirects");
-const { buildURL, slugToFoldername } = require("./utils");
+const cheerio = require("./monkeypatched-cheerio");
 
-const kumascript = require("kumascript");
-
-function getCurretGitHubBaseURL() {
+function getCurrentGitHubBaseURL() {
   return packageJson.repository;
 }
 
@@ -77,36 +66,6 @@ function validateSlug(slug) {
   }
 }
 
-function repairUri(uri) {
-  // Returns a lowercase URI with common irregularities repaired.
-  uri = uri.trim().toLowerCase();
-  if (!uri.startsWith("/")) {
-    // Ensure the URI starts with a "/".
-    uri = "/" + uri;
-  }
-  // Remove redundant forward slashes, like "//".
-  uri = uri.replace(/\/{2,}/g, "/");
-  // Ensure the URI starts with a valid locale.
-  const maybeLocale = uri.split("/")[1];
-  if (!VALID_LOCALES.has(maybeLocale)) {
-    if (maybeLocale === "en") {
-      // Converts URI's like "/en/..." to "/en-us/...".
-      uri = uri.replace(`/${maybeLocale}`, "/en-us");
-    } else {
-      // Converts URI's like "/web/..." to "/en-us/web/...", or
-      // URI's like "/docs/..." to "/en-us/docs/...".
-      uri = "/en-us" + uri;
-    }
-  }
-  // Ensure the locale is followed by "/docs".
-  const [locale, maybeDocs] = uri.split("/").slice(1, 3);
-  if (maybeDocs !== "docs") {
-    // Converts URI's like "/en-us/web/..." to "/en-us/docs/web/...".
-    uri = uri.replace(`/${locale}`, `/${locale}/docs`);
-  }
-  return uri;
-}
-
 /**
  * Recursive method that renders the macros within the document
  * represented by this source, URI, metadata and raw HTML, as
@@ -120,12 +79,7 @@ async function renderMacrosAndBuildLiveSamples(
 ) {
   // First, render the macros to get the rendered HTML.
   const [renderedHtml, flaws] = await kumascript.render(
-    buildURL(metadata.locale, metadata.slug),
-    {
-      uriTransform: resolveRedirect,
-      liveSamplesBaseUrl: DEFAULT_LIVE_SAMPLES_BASE_URL,
-      interactiveExamplesBaseUrl: DEFAULT_INTERACTIVE_EXAMPLES_BASE_URL,
-    }
+    buildURL(metadata.locale, metadata.slug)
   );
 
   // Next, let's find any samples that we need to build, and note
@@ -177,7 +131,7 @@ async function renderMacrosAndBuildLiveSamples(
   for (const [slug, sampleIDs] of otherSampleIds || []) {
     const [{ context }] = sampleIDs;
     const otherURL = buildURL(metadata.locale, slug);
-    const otherCleanUri = resolveRedirect(otherURL);
+    const otherCleanUri = Redirect.resolve(otherURL);
     // TODO
     if (!"documentExists") {
       // I suppose we could use any, but let's use the context of the first
@@ -245,7 +199,7 @@ function injectNoTranslate($) {
  * @param {String} folder - the current folder we're processing.
  */
 function getGitHubURL(folder) {
-  const gitURL = getCurretGitHubBaseURL();
+  const gitURL = getCurrentGitHubBaseURL();
   const branch = getCurrentGitBranch();
   return `${gitURL}/blob/${branch}/content/files/${folder}/index.html`;
 }

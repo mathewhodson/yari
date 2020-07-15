@@ -5,10 +5,12 @@ const fm = require("front-matter");
 const glob = require("glob");
 const yaml = require("js-yaml");
 
-const { VALID_LOCALES } = require("./constants");
-const { buildURL, memoizeDuringBuild, slugToFoldername } = require("./utils");
-
-const CONTENT_ROOT = path.join(__dirname, "..", "files");
+const {
+  CONTENT_ARCHIVE_ROOT,
+  CONTENT_ROOT,
+  VALID_LOCALES,
+} = require("./constants");
+const { memoizeDuringBuild, slugToFoldername } = require("./utils");
 
 function buildPath(localeFolder, slug) {
   return path.join(localeFolder, slugToFoldername(slug));
@@ -73,7 +75,7 @@ function urlToFolderPath(url) {
   return path.join(locale.toLowerCase(), slugToFoldername(slugParts.join("/")));
 }
 
-function create(html, metadata, wikiHistory = null, rawHtml = null) {
+function create(html, metadata) {
   const folder = buildPath(
     path.join(CONTENT_ROOT, metadata.locale),
     metadata.slug
@@ -82,21 +84,28 @@ function create(html, metadata, wikiHistory = null, rawHtml = null) {
   fs.mkdirSync(folder, { recursive: true });
 
   saveHTMLFile(getHTMLPath(folder), trimLineEndings(html), metadata);
+}
+
+function archive(renderedHTML, rawHTML, metadata, wikiHistory) {
+  const folder = buildPath(
+    path.join(CONTENT_ARCHIVE_ROOT, metadata.locale),
+    metadata.slug
+  );
+
+  fs.mkdirSync(folder, { recursive: true });
 
   // The `rawHtml` is only applicable in the importer when it saves
   // archived content. The archived content gets the *rendered* html
   // saved but by storing the raw html too we can potentially resurrect
   // the document if we decide to NOT archive it in the future.
-  if (rawHtml) {
-    fs.writeFileSync(path.join(folder, "raw.html"), trimLineEndings(rawHtml));
-  }
+  fs.writeFileSync(path.join(folder, "raw.html"), trimLineEndings(rawHTML));
 
-  if (wikiHistory) {
-    fs.writeFileSync(
-      getWikiHistoryPath(folder),
-      JSON.stringify(wikiHistory, null, 2)
-    );
-  }
+  fs.writeFileSync(
+    getWikiHistoryPath(folder),
+    JSON.stringify(wikiHistory, null, 2)
+  );
+
+  saveHTMLFile(getHTMLPath(folder), trimLineEndings(renderedHTML), metadata);
 }
 
 class Document {
@@ -233,6 +242,7 @@ module.exports = {
   buildPath,
 
   create,
+  archive,
   read,
   update,
   del,

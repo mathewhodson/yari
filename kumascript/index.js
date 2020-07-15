@@ -1,6 +1,9 @@
-const Document = require("content/src/document");
-const { memoizeDuringBuild } = require("content/src/utils");
+const { Document } = require("content");
 
+const {
+  INTERACTIVE_EXAMPLES_BASE_URL,
+  LIVE_SAMPLES_BASE_URL,
+} = require("./src/constants");
 const Templates = require("./src/templates.js");
 const AllPagesInfo = require("./src/info.js");
 const { getPrerequisites, render: renderMacros } = require("./src/render.js");
@@ -11,45 +14,36 @@ const {
 } = require("./src/live-sample.js");
 const { HTMLTool } = require("./src/api/util.js");
 
-const renderFromURL = memoizeDuringBuild(
-  async (url, config) => {
-    const {
-      interactiveExamplesBaseUrl,
-      liveSamplesBaseUrl,
-      uriTransform,
-    } = config;
-    const { rawHtml, metadata } = Document.findByURL(url).document;
-    const [renderedHtml, errors] = await renderMacros(
-      rawHtml,
-      new Templates(),
-      {
-        ...{
-          path: url,
-          url: `${"this.options.sitemapBaseUrl"}${url}`,
-          locale: metadata.locale,
-          slug: metadata.slug,
-          title: metadata.title,
-          tags: metadata.tags || [],
-          selective_mode: false,
-        },
-        interactive_examples: {
-          base_url: interactiveExamplesBaseUrl,
-        },
-        live_samples: { base_url: liveSamplesBaseUrl },
+async function renderFromURL(url) {
+  const { rawHtml, metadata } = Document.findByURL(url).document;
+  const [renderedHtml, errors] = await renderMacros(
+    rawHtml,
+    new Templates(),
+    {
+      ...{
+        path: url,
+        url: `${"this.options.sitemapBaseUrl"}${url}`,
+        locale: metadata.locale,
+        slug: metadata.slug,
+        title: metadata.title,
+        tags: metadata.tags || [],
+        selective_mode: false,
       },
-      new AllPagesInfo(uriTransform),
-      (url) => renderFromURL(url, config)
-    );
+      interactive_examples: {
+        base_url: INTERACTIVE_EXAMPLES_BASE_URL,
+      },
+      live_samples: { base_url: LIVE_SAMPLES_BASE_URL },
+    },
+    (url) => renderFromURL(url)
+  );
 
-    // For now, we're just going to inject section ID's.
-    // TODO: Sanitize the HTML and also filter the "src"
-    //       attributes of any iframes.
-    const tool = new HTMLTool(renderedHtml);
-    tool.injectSectionIDs();
-    return [tool.html(), errors];
-  },
-  (url) => url
-);
+  // For now, we're just going to inject section ID's.
+  // TODO: Sanitize the HTML and also filter the "src"
+  //       attributes of any iframes.
+  const tool = new HTMLTool(renderedHtml);
+  tool.injectSectionIDs();
+  return [tool.html(), errors];
+}
 
 module.exports = {
   buildLiveSamplePage,

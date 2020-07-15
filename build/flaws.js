@@ -1,5 +1,6 @@
+const { Document } = require("content");
+
 const { FLAW_LEVELS } = require("./constants");
-const Document = require("./document");
 const { packageBCD } = require("./resolve-bcd");
 
 const options = { flawLevels: new Map() };
