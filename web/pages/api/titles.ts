@@ -1,9 +1,16 @@
-const { watch } = require("content");
+const { Document, watch } = require("content");
 
 const index = new Map();
 let isReady = false;
 
-watch({ onReady() {}, onCreate() {}, onUpdate() {}, onDelete() {} });
+watch({
+  onReady() {},
+  onCreate(folder) {
+    const document = Document.read(folder, { metadata: true });
+  },
+  onUpdate() {},
+  onDelete() {},
+});
 
 export default (req, res) => {
   res.statusCode = 200;

@@ -1,5 +1,4 @@
 const { Document } = require("content/src/lib");
-const { buildURL } = require("content/src/utils");
 
 const BASE_URL = "https://developer.mozilla.org";
 const DUMMY_BASE_URL = "https://example.com";
@@ -101,15 +100,15 @@ class AllPagesInfo {
   }
 
   getPage(url) {
-    const result = Document.findByURL(url);
+    const result = Document.findByURL(url, { metadata: true });
     if (!result) {
       throw new Error(`${this.getDescription(url)} does not exist`);
     }
 
-    const self = this;
-    const { locale, slug, title, summary, tags } = result.document.metadata;
+    const { document } = result;
+    const { locale, slug, title, summary, tags } = document.metadata;
     return {
-      url: buildURL(locale, slug),
+      url: document.url,
       locale,
       slug,
       title,
@@ -117,8 +116,8 @@ class AllPagesInfo {
       tags: tags || [],
       translations: [], //TODO Object.freeze(buildTranslationObjects(data)),
       get subpages() {
-        return Document.findChildren(url).map((doc) =>
-          self.getPage(buildURL(locale, doc.metadata.slug))
+        return Document.findChildren(url, { metadata: true }).map((document) =>
+          this.getPage(document.url)
         );
       },
     };

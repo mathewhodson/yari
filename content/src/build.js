@@ -264,8 +264,6 @@ async function buildDocument(folder, document) {
 
   doc.flaws = {};
 
-  const url = buildURL(document.metadata.locale, document.metadata.slug);
-
   let [renderedHtml, flaws] = await renderMacrosAndBuildLiveSamples(document);
 
   const { metadata, fileInfo } = document;
@@ -324,7 +322,7 @@ async function buildDocument(folder, document) {
 
   doc.title = metadata.title;
   doc.summary = metadata.summary;
-  doc.mdn_url = url;
+  doc.mdn_url = document.url;
   if (metadata.translation_of) {
     doc.translation_of = metadata.translation_of;
   }
@@ -373,7 +371,7 @@ async function buildDocument(folder, document) {
   // The `titles` object should contain every possible URI->Title mapping.
   // We can use that generate the necessary information needed to build
   // a breadcrumb in the React component.
-  addBreadcrumbData(url, doc);
+  addBreadcrumbData(document.url, doc);
 
   return doc;
 }
